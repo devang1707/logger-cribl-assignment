@@ -1,0 +1,21 @@
+{
+  "name": "logger-cribl-assignment",
+  "version": "1.0.0",
+  "description": "An App to display log files",
+  "main": "index.js",
+  "scripts": {
+    "test": "true",
+    "install-server": "cd server && npm install",
+    "install-client": "cd client && npm install",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "server": "cd server && npm run start",
+    "client": "cd client && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
