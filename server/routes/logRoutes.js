@@ -58,8 +58,7 @@ function parseLogLine(line) {
   try {
     const logEntry = JSON.parse(line);
     const timestamp = new Date(logEntry._time).toISOString();
-    const message = logEntry.message;
-    return { timestamp, message };
+    return { timestamp, ...logEntry };
   } catch (error) {
     console.error('Error parsing log line:', error);
     return null;
