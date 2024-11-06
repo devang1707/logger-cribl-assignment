@@ -10,6 +10,15 @@ const fileLocation =
 const getPaginatedLogs = async (req, res) => {
   const { page = 1, limit = 50 } = req.query;
 
+  if (page < 1 || limit < 1) {
+    res.write(
+      `data: ${JSON.stringify({
+        error: 'Invalid pagination parameters',
+      })}\n\n`
+    );
+    return res.end();
+  }
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -37,6 +46,15 @@ const getPaginatedLogs = async (req, res) => {
           logs.push(parsedLog);
         }
       }
+    }
+
+    if (logs.length === 0) {
+      res.write(
+        `data: ${JSON.stringify({
+          error: 'No logs found for the given page',
+        })}\n\n`
+      );
+      return res.end();
     }
 
     res.write(

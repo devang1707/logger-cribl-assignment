@@ -1,69 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/LogTable.css'; // Adjust the path if necessary
 
-export default function LogTable() {
-  const [logs, setLogs] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+export default function LogTable({
+  logs,
+  totalCount,
+  isLoading,
+  page,
+  limit,
+  onPageChange,
+}) {
   const [expandedRows, setExpandedRows] = useState(new Set());
-  const limit = 20;
-
-  useEffect(() => {
-    setIsLoading(true);
-    const eventSource = new EventSource(
-      `/api/logs/pagination?page=${page}&limit=${limit}`
-    );
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.error) {
-        console.error('Error:', data.error);
-        setLogs([]);
-        setTotalCount(0);
-      } else {
-        setLogs((prevLogs) => [...prevLogs, ...data.logs]);
-        setTotalCount(data.totalCount);
-      }
-      setIsLoading(false);
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('EventSource error:', error);
-      setIsLoading(false);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, [page]);
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    setLogs([]); // Clear logs for new page
-  };
 
   const toggleRow = (index) => {
-    const newExpandedRows = new Set();
+    const newExpandedRows = new Set(expandedRows);
     if (expandedRows.has(index)) {
+      newExpandedRows.delete(index); // Collapse row
     } else {
-      newExpandedRows.add(index);
+      newExpandedRows.add(index); // Expand row
     }
     setExpandedRows(newExpandedRows);
   };
 
-  const totalPages = Math.ceil(totalCount / limit);
+  const totalPages = Math.ceil(totalCount / limit) || 1; // Ensure totalPages is at least 1
 
   return (
     <div>
       <h3>Logs Entry</h3>
+      {/* Conditionally render based on loading state */}
       {isLoading ? (
         <div>Loading...</div>
       ) : (
         <>
           <div>
-            Displaying page {page} of {totalPages} records
+            Displaying page {page} of {totalPages} records{' '}
+            {/* Safely display totalPages */}
           </div>
           <div className="log-table-container">
             <table className="log-table">
@@ -74,18 +44,17 @@ export default function LogTable() {
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(logs) &&
+                {Array.isArray(logs) && logs.length > 0 ? (
                   logs.map((log, index) => (
                     <React.Fragment key={index}>
                       <tr onClick={() => toggleRow(index)}>
                         <td>
-                          <span
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => toggleRow(index)}
-                          >
+                          <span style={{ cursor: 'pointer' }}>
                             {expandedRows.has(index) ? '▼' : '>'}
                           </span>
-                          {new Date(log._time).toISOString()}
+                          {log.timestamp
+                            ? new Date(log.timestamp).toISOString()
+                            : 'Invalid timestamp'}
                         </td>
                         <td>{JSON.stringify(log)}</td>
                       </tr>
@@ -97,22 +66,34 @@ export default function LogTable() {
                         </tr>
                       )}
                     </React.Fragment>
-                  ))}
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="2">No logs available</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-          <div>
+
+          {/* Pagination controls */}
+          <div className="pagination-controls">
+            {/* Previous Button */}
             <button
-              onClick={() => handlePageChange(page - 1)}
+              onClick={() => onPageChange(page - 1)}
               disabled={page === 1}
             >
               Previous
             </button>
+
+            {/* Display current page */}
             <span>
               Page {page} of {totalPages}
             </span>
+
+            {/* Next Button */}
             <button
-              onClick={() => handlePageChange(page + 1)}
+              onClick={() => onPageChange(page + 1)}
               disabled={page === totalPages}
             >
               Next

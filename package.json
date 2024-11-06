@@ -10,12 +10,12 @@
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
     "server": "cd server && npm run start",
     "client": "cd client && npm start",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "concurrently \"npm run start-client\" \"npm run start-server\""
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Devang Gandhi",
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "concurrently": "^7.0.0"
   }
 }
