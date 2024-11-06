@@ -48,7 +48,7 @@ To install the project, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:devang1707/logger-cribl-assignment.git
    cd logger-cribl-assignment
    ```
 
