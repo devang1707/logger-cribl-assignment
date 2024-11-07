@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import '../styles/LogGraph.css'; // Adjust path as necessary
 
-export default function LogGraph({ logs }) {
+const LogGraph = React.memo(({ logs }) => {
   const canvasRef = useRef(null);
 
   // Wrap drawGraph in useCallback
@@ -54,9 +54,7 @@ export default function LogGraph({ logs }) {
     const summary = {};
 
     logs.forEach((log) => {
-      const timeKey = new Date(log.timestamp)
-        .toISOString()
-        .slice(0, 13); // Group by hour
+      const timeKey = new Date(log._time).toISOString().slice(0, 13); // Group by hour
       if (!summary[timeKey]) summary[timeKey] = 0;
       summary[timeKey]++;
     });
@@ -77,4 +75,6 @@ export default function LogGraph({ logs }) {
       <canvas ref={canvasRef} data-testid="log-graph-canvas"></canvas>
     </div>
   );
-}
+});
+
+export default LogGraph;
