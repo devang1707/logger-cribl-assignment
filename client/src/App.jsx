@@ -13,52 +13,58 @@ function App() {
   const [page, setPage] = useState(1);
   const pageSize = 100; // Define the number of logs per page
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true); // Set loading to true when fetching starts
-      try {
-        const response = await fetch(`${LOG_URL}`); // Fetch logs without pagination
-        if (!response.ok) {
-          console.error(
-            'Error fetching logs:',
-            await response.text()
-          );
-          setLogs([]);
-          setTotalCount(0);
-          setIsLoading(false);
-          return;
-        }
+  const fetchLogs = async () => {
+    setIsLoading(true); // Set loading to true when fetching starts
+    try {
+      const response = await fetch(`${LOG_URL}`); // Fetch logs without pagination
+      if (!response.ok) {
+        console.error('Error fetching logs:', await response.text());
+        setLogs([]);
+        setTotalCount(0);
+        setIsLoading(false);
+        return;
+      }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let result = '';
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let result = '';
+      let allLogs = []; // Store all logs
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          result += decoder.decode(value, { stream: true });
-        }
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        const jsonData = result
-          .split('\n')
+        // Decode current chunk
+        result += decoder.decode(value, { stream: true });
+
+        // Process each line as it arrives
+        const lines = result.split('\n');
+        result = lines.pop(); // Keep incomplete last line
+
+        const newLogs = lines
           .filter((line) => line)
           .map((line) => {
             const jsonString = line.replace(/^data: /, '');
             return JSON.parse(jsonString);
           });
 
-        console.log(jsonData);
-        setLogs(jsonData); // Store all logs in state
-        setTotalCount(jsonData.length); // Set total count of logs
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching logs:', error);
-        setIsLoading(false);
-      }
-    };
+        // Update logs state progressively
+        allLogs = [...allLogs, ...newLogs]; // Append new logs to allLogs
 
-    fetchData();
-  }, []); // Fetch data only once on component mount
+        setLogs(allLogs); // Update state with all logs
+        setTotalCount(allLogs.length); // Update total count with fetched logs
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs(); // Fetch logs once on component mount
+  }, []); // Empty dependency array to run only once
 
   // Memoize the paginated logs to avoid recalculating on every render
   const paginatedLogs = useMemo(() => {
@@ -82,13 +88,6 @@ function App() {
     <div className="App">
       <h1>Log Viewer Dashboard</h1>
       <LogGraph logs={paginatedLogs} />
-      <LogTable
-        logs={paginatedLogs}
-        totalCount={totalCount}
-        isLoading={isLoading}
-        page={page}
-        onPageChange={setPage}
-      />
       <div className="pagination-controls">
         <button onClick={handlePreviousPage} disabled={page === 1}>
           Previous
@@ -103,6 +102,13 @@ function App() {
           Next
         </button>
       </div>
+      <LogTable
+        logs={paginatedLogs}
+        totalCount={totalCount}
+        isLoading={isLoading}
+        page={page}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

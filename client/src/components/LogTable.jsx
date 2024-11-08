@@ -3,7 +3,18 @@ import '../styles/LogTable.css';
 
 const LogTable = React.memo(
   ({ logs, totalCount, isLoading, page, onPageChange }) => {
-    // Your existing LogTable code here
+    const [expandedRows, setExpandedRows] = React.useState(new Set());
+
+    const toggleRow = (index) => {
+      const newExpandedRows = new Set(expandedRows);
+      if (expandedRows.has(index)) {
+        newExpandedRows.delete(index); // Collapse row
+      } else {
+        newExpandedRows.add(index); // Expand row
+      }
+      setExpandedRows(newExpandedRows);
+    };
+
     return (
       <div>
         <h3>Logs Entry</h3>
@@ -27,14 +38,28 @@ const LogTable = React.memo(
                 <tbody>
                   {Array.isArray(logs) && logs.length > 0 ? (
                     logs.map((log, index) => (
-                      <tr key={index}>
-                        <td>
-                          {log._time
-                            ? new Date(log._time).toISOString()
-                            : 'Invalid timestamp'}
-                        </td>
-                        <td>{JSON.stringify(log)}</td>
-                      </tr>
+                      <React.Fragment key={index}>
+                        <tr onClick={() => toggleRow(index)}>
+                          <td>
+                            <span style={{ cursor: 'pointer' }}>
+                              {expandedRows.has(index) ? '▼' : '>'}
+                            </span>
+                            {log._time
+                              ? new Date(log._time).toISOString()
+                              : 'Invalid timestamp'}
+                          </td>
+                          <td>{JSON.stringify(log)}</td>
+                        </tr>
+                        {expandedRows.has(index) && (
+                          <tr>
+                            <td colSpan="2">
+                              <pre>
+                                {JSON.stringify(log, null, 2)}
+                              </pre>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))
                   ) : (
                     <tr>
