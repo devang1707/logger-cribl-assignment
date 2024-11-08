@@ -25,21 +25,19 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Design
 
-- [UI (React)] -- (fetch with API call) --> [Server (Express)] -- (fs.createReadStream) --> [Log File]
+- [UI (React)] --> (fetch with API call) --> [Log File]
 
 ## Components
 
 - UI - React
 
-  - Fetches log data from the server in batches (pagination).
-  - Renders a table with 50 rows and pagination available to get next set of records.
-  - Renders a graph on top for the same table set dispalyed below. categorized by dates.
+  - Fetches log data directly from the URL and use ReadableStream to start parsing.
+  - Parse the NDJSON data format and store in user state.
+  - use Progressive loading
+  - Renders a table with 100 rows and pagination available to get next set of records.
+  - use the local file to go through records
+  - Renders a graph on top for the same table set displayed below. categorized by dates.
   - Changing the page changes the graph too.
-
-- Server - Express
-  - create an API to serve UI log rows , fetched from the log file served externally.
-  - add page and limit to restrict the log size.
-  - Use event stream to concurrently stream data as soon as its available.
 
 ## Installation
 

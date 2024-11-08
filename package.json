@@ -5,13 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "true",
-    "install-server": "cd server && npm install",
     "install-client": "cd client && npm install",
-    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
-    "server": "cd server && npm run start",
-    "client": "cd client && npm start",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "start": "concurrently \"npm run start-client\" \"npm run start-server\""
+    "install-all": "npm install && cd ../client && npm install",
+    "start": "cd client && npm start"
   },
   "keywords": [],
   "author": "Devang Gandhi",
